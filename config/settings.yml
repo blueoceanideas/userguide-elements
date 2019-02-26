@@ -1,0 +1,4 @@
+plugins:
+  sail_markdown_elements_enabled:
+    default: true
+    client: true

@@ -1,0 +1,3 @@
+en:
+  site_settings:
+    sail_markdown_elements_enabled: "Enable the Markdown Elements plugin. If you change this, you must rebake all posts with: \"rake posts:rebake\"."
