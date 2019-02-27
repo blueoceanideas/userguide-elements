@@ -27,6 +27,18 @@ const rulesForCallout = {
      }
 };
 
+const rulesForReleaseNotes = {
+    tag: 'release-notes',
+    before: function(state, tagInfo) {
+        let token = state.push('div_open', 'div', 1);
+        token.attrs = [];
+        token.attrs.push(['class', 'callout callout--transparent']);
+    },
+    after: function(state) {
+        state.push('div_close', 'div', -1);
+     }
+};
+
 const rulesForNote = {
     tag: 'note',
     before: function(state, tagInfo) {
@@ -74,6 +86,7 @@ export function setup(helper) {
         md.block.bbcode.ruler.push("callout", rulesForCallout);
         md.block.bbcode.ruler.push("note", rulesForNote);
         md.block.bbcode.ruler.push("tabs", rulesForTabs);
+        md.block.bbcode.ruler.push("callout", rulesForReleaseNotes);
     });
 }
 
