@@ -86,7 +86,7 @@ export function setup(helper) {
         md.block.bbcode.ruler.push("callout", rulesForCallout);
         md.block.bbcode.ruler.push("note", rulesForNote);
         md.block.bbcode.ruler.push("tabs", rulesForTabs);
-        md.block.bbcode.ruler.push("callout", rulesForReleaseNotes);
+        md.block.bbcode.ruler.push("release-notes", rulesForReleaseNotes);
     });
 }
 
