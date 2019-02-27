@@ -28,7 +28,7 @@ const rulesForCallout = {
 };
 
 const rulesForReleaseNotes = {
-    tag: 'release-notes',
+    tag: 'releasenotes',
     before: function(state, tagInfo) {
         let token = state.push('div_open', 'div', 1);
         token.attrs = [];
@@ -86,7 +86,7 @@ export function setup(helper) {
         md.block.bbcode.ruler.push("callout", rulesForCallout);
         md.block.bbcode.ruler.push("note", rulesForNote);
         md.block.bbcode.ruler.push("tabs", rulesForTabs);
-        md.block.bbcode.ruler.push("release-notes", rulesForReleaseNotes);
+        md.block.bbcode.ruler.push("releasenotes", rulesForReleaseNotes);
     });
 }
 
