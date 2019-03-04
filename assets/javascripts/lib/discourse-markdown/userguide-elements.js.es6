@@ -7,13 +7,66 @@ registerOption((siteSettings, opts) => {
 function addDashedClasses (elementClass, tagInfoAttrs = false ) {
     if ( !tagInfoAttrs ) return elementClass;
     let prefix = elementClass + "--";
-    return elementClass + " " + prefix + tagInfoAttrs;
-} 
+
+    // checks & handles single/multiple classes
+    tagInfoAttrs =
+        tagInfoAttrs.search("\b \b") 
+        ? tagInfoAttrs
+            .split(" ")
+            .map( ( attr ) => prefix + attr )
+            .reduce( ( attrs, attr ) => attrs += " " + attr )
+        : prefix + tagInfoAttrs;
+    return elementClass + " " + tagInfoAttrs;
+}
 
 const rulesForAccordion = {
     tag: 'accordion',
-    wrap: 'div.accordion'
+    before: function(state, tagInfo) {
+        let token = state.push('div_open', 'div', 1);
+        token.attrs = [];
+        token.attrs.push(['class', addDashedClasses( 'accordion', tagInfo.attrs['type'])]);
+    },
+    after: function(state) {
+        state.push('div_close', 'div', -1);
+     }
 };
+
+const rulesForAccordionItem = {
+    tag: 'accordionitem',
+    before: function(state, tagInfo) {
+        let token = state.push('div_open', 'div', 1);
+        token.attrs = [];
+        token.attrs.push(['class', 'accordion__item']);
+    },
+    after: function(state) {
+        state.push('div_close', 'div', -1);
+     }
+};
+
+const rulesForAccordionTitle = {
+    tag: 'accordiontitle',
+    before: function(state, tagInfo) {
+        let token = state.push('div_open', 'div', 1);
+        token.attrs = [];
+        token.attrs.push(['class', 'accordion__item-title']);
+    },
+    after: function(state) {
+        state.push('div_close', 'div', -1);
+     }
+};
+
+const rulesForAccordionContent = {
+    tag: 'accordioncontent',
+    before: function(state, tagInfo) {
+        let token = state.push('div_open', 'div', 1);
+        token.attrs = [];
+        token.attrs.push(['class', 'accordion__item-content']);
+    },
+    after: function(state) {
+        state.push('div_close', 'div', -1);
+     }
+};
+
 
 const rulesForCallout = {
     tag: 'callout',
@@ -58,12 +111,74 @@ const rulesForTabs = {
         token.attrs = [];
         token.attrs.push(['class', addDashedClasses( 'tabs', tagInfo.attrs['type'])]);
 
+        console.log(token);
+    },
+    after: function(state) {
+        state.push('div_close', 'div', -1);
+     }
+}
+
+const rulesForTabMenu = {
+    tag: 'tabmenu',
+    before: function(state, tagInfo) {
+        let token = state.push('div_open', 'div', 1);
+        token.attrs = [];
+        token.attrs.push(['class', 'tabs-menu']);
+
         console.log(token.content);
     },
     after: function(state) {
         state.push('div_close', 'div', -1);
      }
 }
+
+
+
+const rulesForTabLink = {
+    tag: 'tablink',
+    before: function(state, tagInfo) {
+        let token = state.push('div_open', 'div', 1);
+        token.attrs = [];
+        token.attrs.push(['class', 'tabs-link '+tagInfo.attrs['_default']]);
+
+        console.log(token.content);
+    },
+    after: function(state) {
+        state.push('div_close', 'div', -1);
+     }
+}
+
+const rulesForTab = {
+    tag: 'tab',
+    before: function(state, tagInfo) {
+        let token = state.push('div_open', 'div', 1);
+        let title = tagInfo.attrs['title'];
+
+        token.attrs = [];
+        token.attrs.push(['class', 'tab '+tagInfo.attrs['_default']]);
+        
+        console.log(token, state);
+
+        token = state.push("html_inline")
+
+        
+    },
+    after: function(state) {
+        state.push('div_close', 'div', -1);
+     }
+}
+
+const rulesForTable = {
+    tag: 'table',
+    before: function(state, tagInfo) {
+        let token = state.push('table_open', 'table', 1);
+        token.attrs = [];
+        token.attrs.push(['class', addDashedClasses( 'table', tagInfo.attrs['type'])]);
+    },
+    after: function(state) {
+        state.push('table_close', 'table', -1);
+     }
+};
 
 // setup() gets called when the editor is loaded
 export function setup(helper) {
@@ -82,11 +197,28 @@ export function setup(helper) {
     //markdown component to register go here
     helper.registerPlugin( md => {
         console.log(md.block.bbcode.ruler);
-        md.block.bbcode.ruler.push("accordion", rulesForAccordion);
-        md.block.bbcode.ruler.push("callout", rulesForCallout);
+        
         md.block.bbcode.ruler.push("note", rulesForNote);
-        md.block.bbcode.ruler.push("tabs", rulesForTabs);
+        md.block.bbcode.ruler.push("callout", rulesForCallout);
         md.block.bbcode.ruler.push("releasenotes", rulesForReleaseNotes);
+
+        // Accordion
+        md.block.bbcode.ruler.push("accordion", rulesForAccordion);
+        md.block.bbcode.ruler.push("accordionitem", rulesForAccordionItem);
+        md.block.bbcode.ruler.push("accordiontitle", rulesForAccordionTitle);
+        md.block.bbcode.ruler.push("accordioncontent", rulesForAccordionContent);
+
+        // Tabs
+        md.block.bbcode.ruler.push("tabs", rulesForTabs);
+        md.block.bbcode.ruler.push("tabmenu", rulesForTabMenu);
+        md.block.bbcode.ruler.push("tablink", rulesForTabLink);
+        md.block.bbcode.ruler.push("tab", rulesForTab);
+
+        // Tables
+        //md.block.bbcode.ruler.push("table", rulesForTable);
+
+        // Links/Buttons
+
     });
 }
 
