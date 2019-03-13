@@ -80,6 +80,18 @@ const rulesForCallout = {
      }
 };
 
+const rulesForCalloutTitle = {
+    tag: 'callouttitle',
+    before: function(state, tagInfo) {
+        let token = state.push('h4_open', 'h4', 1);
+        token.attrs = [];
+        token.attrs.push(['class', 'callout__title']);
+    },
+    after: function(state) {
+        state.push('h4_close', 'h4', -1);
+     }
+};
+
 const rulesForReleaseNotes = {
     tag: 'releasenotes',
     before: function(state, tagInfo) {
@@ -101,6 +113,18 @@ const rulesForNote = {
     },
     after: function(state) {
         state.push('div_close', 'div', -1);
+     }
+};
+
+const rulesForNoteTitle = {
+    tag: 'notetitle',
+    before: function(state, tagInfo) {
+        let token = state.push('h4_open', 'h4', 1);
+        token.attrs = [];
+        token.attrs.push(['class', 'note-title']);
+    },
+    after: function(state) {
+        state.push('h4_close', 'h4', -1);
      }
 };
 
@@ -131,8 +155,6 @@ const rulesForTabMenu = {
         state.push('div_close', 'div', -1);
      }
 }
-
-
 
 const rulesForTabLink = {
     tag: 'tablink',
@@ -199,7 +221,9 @@ export function setup(helper) {
         console.log(md.block.bbcode.ruler);
         
         md.block.bbcode.ruler.push("note", rulesForNote);
+        md.block.bbcode.ruler.push("notetitle", rulesForNoteTitle);
         md.block.bbcode.ruler.push("callout", rulesForCallout);
+        md.block.bbcode.ruler.push("callouttitle", rulesForCalloutTitle);
         md.block.bbcode.ruler.push("releasenotes", rulesForReleaseNotes);
 
         // Accordion
