@@ -159,31 +159,30 @@ const rulesForTab = {
 
 const rulesForLink = {
   tag: 'link',
-  wrap: function(startToken, endToken, tagInfo, content) {
-    const url = ( tagInfo.attrs['href'] || tagInfo.attrs['_default'] || content ).trim();
-
-    if( simpleUrlRegex.test(url) ) {
-      startToken = { type: "a_open", tag: "a", attrs: [["href", url]], content: "", nesting: 1 };
-      endToken   = { type: "a_close", tag: "a", content: "", nesting: -1 };
-    } else {
-      endToken.content = '';
-      startToken.content = '';
-      startToken.type = 'html_inline';
-    }
-
-    return false;
+  before: function(state, tagInfo) {
+    console.log(arguments);
+    let token = state.push('a_open', 'a', 1);
+    token.attrs = [];
+    token.attrs.push(['href', tagInfo.attrs['url']]);
+    token.attrs.push(['target', '_blank']);
+  },
+  after: function(state) {
+     state.push('a_close', 'a', -1);
   }
 };
 
 const rulesForButton = {
   tag: 'button',
-  wrap: function(token, tagInfo) {
-    tagInfo.attrs['type'] ? tagInfo.attrs['type'] : 'primary';
+  before: function(state, tagInfo) {
+    console.log(arguments);
+    let token = state.push('a', 'a', 1);
     token.attrs = [];
-    token.attrs.push(['class', addDashedClasses( 'btn', tagInfo.attrs['type'])]);
     token.attrs.push(['href', tagInfo.attrs['url']]);
+    token.attrs.push(['class', addDashedClasses( 'btn', tagInfo.attrs['type'])]);
     token.attrs.push(['target', '_blank']);
-    return true;
+  },
+  after: function(state) {
+     state.push('a_close', 'a', -1);
   }
 };
 
@@ -225,7 +224,7 @@ export function setup(helper) {
 
         // Links/Buttons
         md.block.bbcode.ruler.push("link", rulesForLink);
-        //md.block.bbcode.ruler.push("button", rulesForButton);
+        md.block.bbcode.ruler.push("button", rulesForButton);
 
     });
 }
