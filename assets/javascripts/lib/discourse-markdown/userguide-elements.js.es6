@@ -10,7 +10,7 @@ function addDashedClasses (elementClass, tagInfoAttrs = false ) {
 
     // checks & handles single/multiple classes
     tagInfoAttrs =
-        tagInfoAttrs.search("\b \b") 
+        tagInfoAttrs.search("\b \b")
         ? tagInfoAttrs
             .split(" ")
             .map( ( attr ) => prefix + attr )
@@ -67,65 +67,42 @@ const rulesForAccordionContent = {
      }
 };
 
+const rulesForReleaseNotes = {
+  tag: 'releasenotes',
+  before: function(state, tagInfo) {
+      let token = state.push('div_open', 'div', 1);
+      token.attrs = [];
+      token.attrs.push(['class', 'callout callout--transparent']);
+  },
+  after: function(state) {
+      state.push('div_close', 'div', -1);
+   }
+};
 
 const rulesForCallout = {
     tag: 'callout',
-    before: function(state, tagInfo) {
-        let token = state.push('div_open', 'div', 1);
-        token.attrs = [];
-        token.attrs.push(['class', addDashedClasses( 'callout', tagInfo.attrs['type'])]);
-    },
-    after: function(state) {
-        state.push('div_close', 'div', -1);
-     }
+    wrap: function(token, tagInfo) {
+      token.attrs = [['class', addDashedClasses( 'callout', tagInfo.attrs['type'])]];
+      return true;
+    }
 };
 
 const rulesForCalloutTitle = {
     tag: 'callouttitle',
-    before: function(state, tagInfo) {
-        let token = state.push('h4_open', 'h4', 1);
-        token.attrs = [];
-        token.attrs.push(['class', 'callout__title']);
-    },
-    after: function(state) {
-        state.push('h4_close', 'h4', -1);
-     }
-};
-
-const rulesForReleaseNotes = {
-    tag: 'releasenotes',
-    before: function(state, tagInfo) {
-        let token = state.push('div_open', 'div', 1);
-        token.attrs = [];
-        token.attrs.push(['class', 'callout callout--transparent']);
-    },
-    after: function(state) {
-        state.push('div_close', 'div', -1);
-     }
+    wrap: 'h4.callout__title'
 };
 
 const rulesForNote = {
     tag: 'note',
-    before: function(state, tagInfo) {
-        let token = state.push('div_open', 'div', 1);
-        token.attrs = [];
-        token.attrs.push(['class', addDashedClasses( 'note', tagInfo.attrs['type'])]);
-    },
-    after: function(state) {
-        state.push('div_close', 'div', -1);
-     }
+    wrap: function(token, tagInfo) {
+      token.attrs = [['class', addDashedClasses( 'note', tagInfo.attrs['type'])]];
+      return true;
+    }
 };
 
 const rulesForNoteTitle = {
     tag: 'notetitle',
-    before: function(state, tagInfo) {
-        let token = state.push('h4_open', 'h4', 1);
-        token.attrs = [];
-        token.attrs.push(['class', 'note-title']);
-    },
-    after: function(state) {
-        state.push('h4_close', 'h4', -1);
-     }
+    wrap: 'h4.note-title'
 };
 
 const rulesForTabs = {
@@ -134,8 +111,6 @@ const rulesForTabs = {
         let token = state.push('div_open', 'div', 1);
         token.attrs = [];
         token.attrs.push(['class', addDashedClasses( 'tabs', tagInfo.attrs['type'])]);
-
-        console.log(token);
     },
     after: function(state) {
         state.push('div_close', 'div', -1);
@@ -148,8 +123,6 @@ const rulesForTabMenu = {
         let token = state.push('div_open', 'div', 1);
         token.attrs = [];
         token.attrs.push(['class', 'tabs-menu']);
-
-        console.log(token.content);
     },
     after: function(state) {
         state.push('div_close', 'div', -1);
@@ -162,8 +135,6 @@ const rulesForTabLink = {
         let token = state.push('div_open', 'div', 1);
         token.attrs = [];
         token.attrs.push(['class', 'tabs-link '+tagInfo.attrs['_default']]);
-
-        console.log(token.content);
     },
     after: function(state) {
         state.push('div_close', 'div', -1);
@@ -175,37 +146,51 @@ const rulesForTab = {
     before: function(state, tagInfo) {
         let token = state.push('div_open', 'div', 1);
         let title = tagInfo.attrs['title'];
-
-        token.attrs = [];
-        token.attrs.push(['class', 'tab '+tagInfo.attrs['_default']]);
-        
-        console.log(token, state);
-
+        if(tagInfo.attrs['_default']) {
+          token.attrs = [];
+          token.attrs.push(['class', 'tab '+tagInfo.attrs['_default']]);
+        }
         token = state.push("html_inline")
-
-        
     },
     after: function(state) {
         state.push('div_close', 'div', -1);
      }
 }
 
-const rulesForTable = {
-    tag: 'table',
-    before: function(state, tagInfo) {
-        let token = state.push('table_open', 'table', 1);
-        token.attrs = [];
-        token.attrs.push(['class', addDashedClasses( 'table', tagInfo.attrs['type'])]);
-    },
-    after: function(state) {
-        state.push('table_close', 'table', -1);
-     }
+const rulesForLink = {
+  tag: 'link',
+  wrap: function(startToken, endToken, tagInfo, content) {
+    const url = ( tagInfo.attrs['href'] || tagInfo.attrs['_default'] || content ).trim();
+
+    if( simpleUrlRegex.test(url) ) {
+      startToken = { type: "a_open", tag: "a", attrs: [["href", url]], content: "", nesting: 1 };
+      endToken   = { type: "a_close", tag: "a", content: "", nesting: -1 };
+    } else {
+      endToken.content = '';
+      startToken.content = '';
+      startToken.type = 'html_inline';
+    }
+
+    return false;
+  }
+};
+
+const rulesForButton = {
+  tag: 'button',
+  wrap: function(token, tagInfo) {
+    tagInfo.attrs['type'] ? tagInfo.attrs['type'] : 'primary';
+    token.attrs = [];
+    token.attrs.push(['class', addDashedClasses( 'btn', tagInfo.attrs['type'])]);
+    token.attrs.push(['href', tagInfo.attrs['url']]);
+    token.attrs.push(['target', '_blank']);
+    return true;
+  }
 };
 
 // setup() gets called when the editor is loaded
 export function setup(helper) {
     console.log("markdown-elements setup()");
-    
+
     if(!helper.markdownIt) { return; }
 
     // any functions that need to run can go here.
@@ -219,11 +204,11 @@ export function setup(helper) {
     //markdown component to register go here
     helper.registerPlugin( md => {
         console.log(md.block.bbcode.ruler);
-        
+
         md.block.bbcode.ruler.push("note", rulesForNote);
-        md.block.bbcode.ruler.push("notetitle", rulesForNoteTitle);
+        md.inline.bbcode.ruler.push("notetitle", rulesForNoteTitle);
         md.block.bbcode.ruler.push("callout", rulesForCallout);
-        md.block.bbcode.ruler.push("callouttitle", rulesForCalloutTitle);
+        md.inline.bbcode.ruler.push("callouttitle", rulesForCalloutTitle);
         md.block.bbcode.ruler.push("releasenotes", rulesForReleaseNotes);
 
         // Accordion
@@ -238,10 +223,9 @@ export function setup(helper) {
         md.block.bbcode.ruler.push("tablink", rulesForTabLink);
         md.block.bbcode.ruler.push("tab", rulesForTab);
 
-        // Tables
-        //md.block.bbcode.ruler.push("table", rulesForTable);
-
         // Links/Buttons
+        md.block.bbcode.ruler.push("link", rulesForLink);
+        //md.block.bbcode.ruler.push("button", rulesForButton);
 
     });
 }
